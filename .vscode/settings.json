@@ -1,4 +1,10 @@
 {
-  "python.defaultInterpreterPath": "C:\\Users\\Rafael Po\\fruit_grading_env\\Scripts\\python.exe",
-  "jupyter.jupyterServerType": "local"
+  "python.defaultInterpreterPath": "/Users/theofilius/micromamba/envs/cats_convert/bin/python",
+  "python.pythonPath": "/Users/theofilius/micromamba/envs/cats_convert/bin/python",
+  "jupyter.kernelSpecFindAll": true,
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none"
+  },
+  "pyrefly.enable": false
 }

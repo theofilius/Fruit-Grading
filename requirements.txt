@@ -1,0 +1,10 @@
+tensorflow==2.16.2
+scikit-learn
+pandas
+matplotlib
+seaborn
+opencv-python
+tqdm
+kaggle
+typing_extensions>=4.6.0
+scikit-image

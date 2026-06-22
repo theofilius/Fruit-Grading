@@ -9,11 +9,11 @@ This project explores a **"cluster-then-classify" (pseudo-labeling)** methodolog
 ## Key Results & Performance
 Our best-performing model (trained via two-phase transfer learning on EfficientNetB0) achieved the following results on the test set:
 
-* **91% overall test accuracy** and **0.89 macro F1-score** across 9 classes (3 fruits × 3 quality grades).
+* **96.5% overall test accuracy** and **0.96 macro F1-score** across 9 classes (3 fruits × 3 quality grades).
 * **Perfect Grade Separation**: Zero cross-fruit confusion (e.g., the model never mistakes an orange for an apple).
-* **Premium Quality Detection**: **100% recall** on all Grade A classes.
-* **Banana Grading Strength**: The strongest category overall, yielding **92% to 100% per-grade accuracy**.
-* **Fragile Class Handling (Orange C)**: With only **123 images total** (18 in the test set), this minority class was highly sensitive. Applying a class weight of **5.3x** helped stabilize training, achieving a F1-score of **0.76** and precision of **0.67**.
+* **Premium Quality Detection**: **100% recall** on Banana and Orange Grade A classes, and **93%** on Apple Grade A.
+* **Banana Grading Strength**: The strongest category overall, yielding **96% to 100% per-grade F1-scores**.
+* **Fragile Class Handling (Orange C)**: With only **123 images total** (18 in the test set), this minority class was highly sensitive. Applying a class weight of **5.3x** helped stabilize training, achieving an F1-score of **0.86** and precision of **0.75**.
 
 ---
 
@@ -27,7 +27,7 @@ graph TD
     D --> E[Auto-Ranked Pseudo-Labels A/B/C]
     E --> F[Step 2: EfficientNetB0 CNN]
     F --> G[Two-Phase Transfer Learning]
-    G --> H[Final Model 91% Accuracy]
+    G --> H[Final Model 96.5% Accuracy]
 ```
 
 ### Stage 1: Unsupervised Pseudo-Labeling (`Step 1 Notebook`)
@@ -40,7 +40,7 @@ graph TD
 1. **Model Backbone**: Pretrained EfficientNetB0 with custom classification heads.
 2. **Phase 1 Training (Frozen Base)**: Trains only the classification head for 15 epochs at `LR=1e-3` to preserve ImageNet features.
 3. **Phase 2 Training (Fine-Tuning)**: Partially unfreezes the top 20 layers for 30 epochs at `LR=1e-4` for domain adaptation.
-4. **No Phase 3 (The Noise Ceiling)**: Unfreezing the entire network (Phase 3) caused the test set accuracy to collapse to **23%** (while validation accuracy on the noisy pseudo-labels artificially hovered around **85–88%**). This occurred because the network began memorizing the K-Means pseudo-label noise (estimated at **~15–20%**) instead of learning true quality features. Removing Phase 3 was the critical fix.
+4. **No Phase 3 (The Noise Ceiling)**: Unfreezing the entire network (Phase 3) caused the test set accuracy to collapse to **15%** (while validation accuracy on the noisy pseudo-labels artificially hovered around **85–88%**). This occurred because the network began memorizing the K-Means pseudo-label noise (estimated at **~15–20%**) instead of learning true quality features. Removing Phase 3 was the critical fix.
 
 ---
 
@@ -49,8 +49,8 @@ graph TD
 * `fruit_grading_step1_kmeans_v2.ipynb`: Unsupervised feature extraction, K-Means clustering, and boundary analysis.
 * `fruit_grading_step2_cnn_final.ipynb`: Data pipeline, two-phase transfer learning, and Grad-CAM/confusion matrix evaluation.
 * `output/`: Folder containing model evaluation reports, plots, and boundary metrics.
-  * `plots/confusion_matrix.png`: Best model's confusion matrix.
-  * `plots/per_class_accuracy.png`: Accuracy heatmap for all 9 classes.
+  * `plots/confusion_matrix_v4.png`: Best model's confusion matrix.
+  * `plots/per_class_accuracy_v4.png`: Accuracy heatmap for all 9 classes.
   * `plots/boundary_scores.png`: Distribution of borderline sample scores.
   * `plots/training_curves_v4.png`: Visual showing the Phase 3 accuracy collapse.
 * `v1/` & `v2/`: Experimental history containing intermediate notebook versions.
@@ -84,4 +84,4 @@ pip install tensorflow opencv-python scikit-learn scikit-image pandas tqdm matpl
 
 ## Limitations
 * **Label Quality Ceiling**: Because labels are derived from K-Means clustering and not human experts, the model learns what K-Means defines as "quality." It is a grading system relative to this dataset's distribution, not a strict agricultural standard.
-* **Middle Class Ambiguity**: Grade B remains the weakest class (Apple B: **80%**, Orange B: **84%**) due to ambiguous boundary samples.
+* **Middle Class Ambiguity**: While Grade B performance improved significantly in v4 (>94% F1-scores), borderline samples still inherently inherit the highest label uncertainty from the K-Means pseudo-labeling phase.
